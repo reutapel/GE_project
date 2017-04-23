@@ -68,8 +68,11 @@ for folder in directories:
 
 print(index)
 Rmean = np.mean(out1[:, :, 0])
+Rstd = np.std(out1[:, :, 0])
 Gmean = np.mean(out1[:, :, 1])
+Gstd = np.std(out1[:, :, 1])
 Bmean = np.mean(out1[:, :, 2])
+Bstd = np.std(out1[:, :, 2])
 
 np.save('X_train.npy', out1)  # Saving train image arrays
 np.save('Y_train.npy', index_array)  # Saving train labels
