@@ -1,33 +1,34 @@
 import os
 import numpy as np
 import cv2
+import datetime
 
-# Directory containing images you wish to convert
-input_dir = "C:\\gitprojects\\GE_project\\image"
+def main():
+    # Directory containing images you wish to convert
+    print(datetime.datetime.now())
+    print('Start import data')
+    input_dir = "C:\\gitprojects\\GE_project\\ULSOrgans"
 
-directories = os.listdir(input_dir)
+    directories = os.listdir(input_dir)
 
-index = 0
-index2 = 0
-classes_dict = {}
+    index = 0
+    index2 = 0
+    classes_dict = {}
 
-for folder in directories:
-    # Ignoring .DS_Store dir
-    if folder == '7ce293e2-c2b9-4c2e-b728-b46e12612f46.csv':
-        pass
+    for folder in directories:
+        # Ignoring metadata csv file
+        if folder == '7ce293e2-c2b9-4c2e-b728-b46e12612f46.csv':
+            pass
 
-    else:
-        print(folder)
+        else:
+            print(datetime.datetime.now())
+            print('Start import data from folder: %s' % folder)
 
-        folder2 = os.listdir(input_dir + '\\' + folder)
-        index += 1
-        classes_dict[index] = folder
+            folder2 = os.listdir(input_dir + '\\' + folder)
+            index += 1
+            classes_dict[index] = folder
 
-        for image in folder2:
-            if image == ".DS_Store":
-                pass
-
-            else:
+            for image in folder2:
                 index2 += 1
 
                 im = cv2.resize(cv2.imread(input_dir+"\\"+folder+"\\"+image), (224, 224)).astype(np.float32)
@@ -63,14 +64,52 @@ for folder in directories:
                     print(e)
                     print("Removing image" + image)
                     os.remove(input_dir + "\\" + folder + "\\" + image)
+            print(datetime.datetime.now())
+            print('Finish folder with %d images' % index2)
 
-print(index)
-Rmean = np.mean(out1[:, :, 0])
-Rstd = np.std(out1[:, :, 0])
-Gmean = np.mean(out1[:, :, 1])
-Gstd = np.std(out1[:, :, 1])
-Bmean = np.mean(out1[:, :, 2])
-Bstd = np.std(out1[:, :, 2])
+    print(datetime.datetime.now())
+    print('Number of folders: %d' % index)
+    np.save('X_train_before.npy', out1)  # Saving train image arrays
+    np.save('Y_train_before.npy', index_array)  # Saving train labels
 
-np.save('X_train.npy', out1)  # Saving train image arrays
-np.save('Y_train.npy', index_array)  # Saving train labels
+    # Calculate mean and std for each channel:
+    mean = []
+    std = []
+    for i in range(3):
+        mean.append(np.mean(out1[:, i, :, :]))
+        std.append(np.std(out1[:, i, :, :]))
+        print(datetime.datetime.now())
+        print('Channel:')
+        print(i)
+        print('mean:')
+        print(mean[i])
+        print('std:')
+        print(std[i])
+
+    # Normalize data:
+    for i in range(3):
+        out1[:, i, :, :] -= mean[i]
+        out1[:, i, :, :] /= std[i]
+
+    np.save('X_train_after.npy', out1)  # Saving train image arrays
+    np.save('Y_train_after.npy', index_array)  # Saving train labels
+
+    for i in range(3):
+        mean.append(np.mean(out1[:, i, :, :]))
+        std.append(np.std(out1[:, i, :, :]))
+        print(datetime.datetime.now())
+        print('After normalize:')
+        print('Channel:')
+        print(i)
+        print('mean:')
+        print(mean[i])
+        print('std:')
+        print(std[i])
+
+    print(datetime.datetime.now())
+    print('Finish running')
+
+    return
+
+if __name__ == '__main__':
+    main()
