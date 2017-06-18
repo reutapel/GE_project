@@ -126,7 +126,7 @@ def create_model(IsTrained, IsLoad, weights_to_load=None):
     Final_Model.summary()
     # plot_model(Final_Model, to_file='model.png', show_layer_names= True, show_shapes=True)
     
-    for i, layer in enumerate(base_model.layers):
+    for i, layer in enumerate(Final_Model.layers):
         print(i, layer.name)
 
     return Final_Model
