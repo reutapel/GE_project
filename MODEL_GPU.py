@@ -23,25 +23,22 @@ import matplotlib.pyplot as plt
 
 
 
-## base_model = VGG19(weights='imagenet')
-## model = Model(inputs=base_model.input, outputs=base_model.get_layer('block4_pool').output)
-##
-## img_path = 'elephant.jpg'
-## img = image.load_img(img_path, target_size=(224, 224))
-## x = image.img_to_array(img)
-## x = np.expand_dims(x, axis=0)
-## x = preprocess_input(x)
-##
-## block4_pool_features = model.predict(x)
-
-
+# base_model = VGG19(weights='imagenet')
+# model = Model(inputs=base_model.input, outputs=base_model.get_layer('block4_pool').output)
+#
+# img_path = 'elephant.jpg'
+# img = image.load_img(img_path, target_size=(224, 224))
+# x = image.img_to_array(img)
+# x = np.expand_dims(x, axis=0)
+# x = preprocess_input(x)
+#
+# block4_pool_features = model.predict(x)
 
 # path to the model weights files.
 weights_path = '../keras/examples/vgg16_weights.h5'
 top_model_weights_path = 'fc_model.h5'
 # dimensions of our images.
 img_width, img_height = 224, 224
-
 
 train_data_dir = 'ULSOrgans_Split/train'
 validation_data_dir = 'ULSOrgans_Split/validation'
@@ -64,7 +61,7 @@ set_vertical_flip = False
 set_fill_mode = 'nearest'
 
 print('Data sizes: nb_train_samples')
-print((nb_train_samples))
+print(nb_train_samples)
 print('nb_validation_samples: ')
 print(nb_validation_samples)
 
