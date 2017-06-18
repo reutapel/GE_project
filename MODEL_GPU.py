@@ -68,55 +68,74 @@ print((nb_train_samples))
 print('nb_validation_samples: ')
 print(nb_validation_samples)
 
-# build the VGG16 network
-model = VGG16(include_top=False, weights='imagenet', input_tensor=None, input_shape=None)  # ,pooling= max)
-#model = VGG16(include_top=False, weights='imagenet', input_tensor=None, input_shape=None, pooling= max)
-print('uploaded trained model')
 
-## build a classifier model to put on top of the conv model
-#top_model = Sequential()
-#top_model.add(Flatten(input_shape=(7,7,512)))
-##top_model.add(Flatten(input_shape=model.output_shape[1:]))
-#top_model.add(Dense(256, activation='relu'))
-#top_model.add(Dropout(0.5))
-##top_model.add(Dense(256, activation='relu'))
-##top_model.add(Dense(256, activation='relu'))
-#top_model.add(Dense(18, activation='softmax'))
+def create_model(IsTrained, IsLoad, weights_to_load=None):
+    # build the VGG16 network
+    model = VGG16(include_top=False, weights='imagenet', input_tensor=None, input_shape=None)  # ,pooling= max)
+    # model = VGG16(include_top=False, weights='imagenet', input_tensor=None, input_shape=None, pooling= max)
+    print('uploaded trained model')
 
-#Create your own input format (here 3x224x224)
-#        shape: A shape tuple (integer), not including the batch size.
-#           For instance, `shape=(32,)` indicates that the expected input
-#           will be batches of 32-dimensional vectors.
-#       batch_shape: A shape tuple (integer), including the batch size.
-#           For instance, `batch_shape=(10, 32)` indicates that
-#           the expected input will be batches of 10 32-dimensional vectors.
-#           `batch_shape=(None, 32)` indicates batches of an arbitrary number
-#           of 32-dimensional vectors.
-input = Input(batch_shape=(batch_size, img_width, img_height, 3), shape=(img_width, img_height, 3), name='image_input')
+    # # build a classifier model to put on top of the conv model
+    # top_model = Sequential()
+    # top_model.add(Flatten(input_shape=(7,7,512)))
+    # #top_model.add(Flatten(input_shape=model.output_shape[1:]))
+    # top_model.add(Dense(256, activation='relu'))
+    # top_model.add(Dropout(0.5))
+    # #top_model.add(Dense(256, activation='relu'))
+    # #top_model.add(Dense(256, activation='relu'))
+    # top_model.add(Dense(18, activation='softmax'))
+    #
+    # Create your own input format (here 3x224x224)
+    #        shape: A shape tuple (integer), not including the batch size.
+    #           For instance, `shape=(32,)` indicates that the expected input
+    #           will be batches of 32-dimensional vectors.
+    #       batch_shape: A shape tuple (integer), including the batch size.
+    #           For instance, `batch_shape=(10, 32)` indicates that
+    #           the expected input will be batches of 10 32-dimensional vectors.
+    #           `batch_shape=(None, 32)` indicates batches of an arbitrary number
+    #           of 32-dimensional vectors.
+    input = Input(batch_shape=(batch_size, img_width, img_height, 3), shape=(img_width, img_height, 3), name='image_input')
 
-output_model = model(input)
+    output_model = model(input)
 
-top_model = Flatten(name='flatten')(output_model)
-# top_model = Dropout(0.2, noise_shape=None, seed=None)(top_model)
-top_model = Dense(1024, activation='relu', name='fc1')(top_model)
-preds = Dense(18, activation='softmax', name='fc2')(top_model)
-Final_Model = Model(input=input, output=preds)
+    top_model = Flatten(name='flatten')(output_model)
+    # top_model = Dropout(0.2, noise_shape=None, seed=None)(top_model)
+    top_model = Dense(1024, activation='relu', name='fc1')(top_model)
+    preds = Dense(18, activation='softmax', name='fc2')(top_model)
+    Final_Model = Model(input=input, output=preds)
 
-#TODO: batch normalization, show prediction visualization,  release train weights, adagrad adam,  insert dropout
+    # add the model on top of the convolutional base
+    # model.add(top_model)
+
+
+    # set the first 25 layers (up to the last conv block)
+    # to non-trainable (weights will not be updated)
+    for layer in model.layers[:25]:
+        layer.trainable = IsTrained
+
+    # Load weights if needed:
+    if IsLoad:
+        Final_Model.load_weights(weights_to_load)
+
+    # compile the model with a SGD/momentum optimizer
+    # and a very slow learning rate.
+    Final_Model.compile(loss='categorical_crossentropy',
+                        # optimizer=optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0),
+                        optimizer=optimizers.SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True),
+                        metrics=['accuracy'])
+    # sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+
+    # show summary and save a graph of the architecture
+    Final_Model.summary()
+    # plot_model(Final_Model, to_file='model.png', show_layer_names= True, show_shapes=True)
+
+    return Final_Model
+
+    #TODO: batch normalization, show prediction visualization,  release train weights, adagrad adam,  insert dropout
 # necessary to start with a fully-trained
 # classifier, including the top classifier,
 # in order to successfully do fine-tuning
 #top_model.load_weights(top_model_weights_path)
-
-
-# add the model on top of the convolutional base
-#model.add(top_model)
-
-
-# set the first 25 layers (up to the last conv block)
-# to non-trainable (weights will not be updated)
-for layer in model.layers[:25]:
-    layer.trainable = False
 
 #TODO: understand nonlinear log-looking dynamic range rescale
 # prepare data augmentation configuration
@@ -166,20 +185,6 @@ validation_generator = validation_datagen.flow_from_directory(
 # validation_labels = np.array([[index] * (validation_label_list[index])
 #                          for index in range(validation_label_list.shape[1])])
 
-
-
-# compile the model with a SGD/momentum optimizer
-# and a very slow learning rate.
-Final_Model.compile(loss='categorical_crossentropy',
-              # optimizer=optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0),
-            optimizer=optimizers.SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True),
-            metrics=['accuracy'])
-#sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-
-# show summary and save a graph of the architecture
-Final_Model.summary()
-#plot_model(Final_Model, to_file='model.png', show_layer_names= True, show_shapes=True)
-
 # checkpoint
 filepath="weights.best.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
@@ -193,6 +198,7 @@ print('number of batches in validation %d' %sample_validatation_per_batch)
 # print('sample_validatation_per_batch: %d') % sample_validatation_per_batch
 
 # If we run locally
+# Final_Model = create_model(False, False)
 # Results1 = Final_Model.fit_generator(
 #     train_generator,
 #     steps_per_epoch=sample_train_per_batch,
@@ -200,22 +206,15 @@ print('number of batches in validation %d' %sample_validatation_per_batch)
 #     validation_data=validation_generator,
 #     validation_steps=sample_validatation_per_batch
 # )
-# print(Results1)
-#
-# for layer in Final_Model.layers[:25]:
-#     layer.trainable = True
-#
-# # Final_Model.compile(loss='categorical_crossentropy',
-# #                         # optimizer=optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0),
-# #                         optimizer=optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True),
-# #                         metrics=['accuracy'])
-# # sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-#
+
 # # show summary and save a graph of the architecture
-# Final_Model.summary()
+# print(Results1)
+# Second_Final_Model = create_model(True, True, filepath)
 # print('start train all layers')
+# Second_Final_Model.summary()
 #
-# Results2 = Final_Model.fit_generator(
+#
+# Results2 = Second_Final_Model.fit_generator(
 #     train_generator,
 #     steps_per_epoch=nb_train_samples,
 #     nb_epoch=epochs,
@@ -234,6 +233,8 @@ print('rescale = %f, '
          set_rotation_range, set_width_shift_range, set_height_shift_range,
          set_shear_range, set_zoom_range, set_horizontal_flip, set_fill_mode))
 
+# Build the model without train the top layers:
+Final_Model = create_model(False, False)
 # If we run on server
 Results1 = Final_Model.fit_generator(
     train_generator,
@@ -244,20 +245,14 @@ Results1 = Final_Model.fit_generator(
 )
 
 print(Results1)
-print(callbacks_list)
 
-for layer in Final_Model.layers[:25]:
-    layer.trainable = True
+# create new model, train the top layers and load the weights from the best model of the first model we trained
+Second_Final_Model = create_model(True, True, filepath)
 
-Final_Model.compile(loss='categorical_crossentropy',
-                    # optimizer=optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0),
-                    optimizer=optimizers.SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True),
-                    metrics=['accuracy'])
-
-Final_Model.summary()
+Second_Final_Model.summary()
 
 print('start train all layers')
-Results2 = Final_Model.fit_generator(
+Results2 = Second_Final_Model.fit_generator(
     train_generator,
     samples_per_epoch=nb_train_samples,
     nb_epoch=epochs,
