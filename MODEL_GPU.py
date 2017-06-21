@@ -46,7 +46,7 @@ train_label_list = np.load('train_label_list.npy')
 validation_label_list = np.load('validation_label.npy')
 nb_train_samples = int(np.sum(train_label_list))
 nb_validation_samples = int(np.sum(validation_label_list))
-epochs = 1
+epochs = 50
 batch_size = 17
 
 #augmantation parameters
@@ -125,13 +125,13 @@ def create_model(IsTrained, IsLoad, weights_to_load=None):
     # show summary and save a graph of the architecture
     Final_Model.summary()
     # plot_model(Final_Model, to_file='model.png', show_layer_names= True, show_shapes=True)
-    
+
     for i, layer in enumerate(Final_Model.layers):
         print(i, layer.name)
 
     return Final_Model
 
-    #TODO: batch normalization, show prediction visualization,  release train weights, adagrad adam,  insert dropout
+    #TODO: batch normalization, show prediction visualization,
 # necessary to start with a fully-trained
 # classifier, including the top classifier,
 # in order to successfully do fine-tuning
@@ -186,7 +186,7 @@ validation_generator = validation_datagen.flow_from_directory(
 #                          for index in range(validation_label_list.shape[1])])
 
 # checkpoint
-filepath="weights.best.hdf5"
+filepath = "weights.best.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
@@ -211,8 +211,6 @@ print('number of batches in validation %d' %sample_validatation_per_batch)
 # print(Results1)
 # Second_Final_Model = create_model(True, True, filepath)
 # print('start train all layers')
-# Second_Final_Model.summary()
-#
 #
 # Results2 = Second_Final_Model.fit_generator(
 #     train_generator,
@@ -248,8 +246,6 @@ print(Results1)
 
 # create new model, train the top layers and load the weights from the best model of the first model we trained
 Second_Final_Model = create_model(True, True, filepath)
-
-Second_Final_Model.summary()
 
 print('start train all layers')
 Results2 = Second_Final_Model.fit_generator(
