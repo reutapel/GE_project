@@ -8,7 +8,7 @@ def main():
     # Directory containing images you wish to convert
     print(datetime.datetime.now())
     print('Start import data and save label lists')
-    input_dir = "ULSOrgans"
+    input_dir = "C:\\gitprojects\\GE_project\\ULSOrgans"
     new_input_dir = "ULSOrgans_Split"
     directories = os.listdir(input_dir)
 
