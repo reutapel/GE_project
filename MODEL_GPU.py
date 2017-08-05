@@ -29,6 +29,7 @@ from keras import backend as K
 from keras.engine.topology import get_source_inputs
 from keras.utils import layer_utils
 from keras.utils.data_utils import get_file
+import Neurons_Vis
 
 
 
@@ -60,6 +61,7 @@ nb_validation_samples = int(np.sum(validation_label_list))
 epochs = 50
 batch_size = 17
 run_in_intel = True
+layer_name = 'block5_conv3'
 
 #augmantation parameters
 set_rescale = 1./255
@@ -183,7 +185,7 @@ def CreateVGG16(input_shape):
     return model
 
 
-def create_model(IsTrained, IsLoad, weights_to_load=None):
+def create_model(IsTrained, IsLoad, weights_to_load=None,layer_name):
     # build the VGG16 network
     # model = VGG16(include_top=False, weights='imagenet', input_tensor=None, input_shape=None)  # ,pooling= max)
     model = CreateVGG16((img_width, img_height, 3))
@@ -463,7 +465,9 @@ else:
         # nb_val_samples=nb_validation_samples,
         callbacks=[history2, check2, plot_progress_validation2]
     )
-
+    
+    # visualize 64 strongest neurons of layer_name
+    Neurons_Vis.visualize_neuron(layer_name)
     print(Results2)
 
 # If we run on server- split train and validate
