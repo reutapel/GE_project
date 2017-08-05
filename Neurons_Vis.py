@@ -3,7 +3,7 @@ This script can run on CPU in a few minutes (with the TensorFlow backend).
 Results example: http://i.imgur.com/4nj4KjN.jpg
 '''
 from __future__ import print_function
-import MODEL_SECOND
+import MODEL_GPU
 from scipy.misc import imsave
 import numpy as np
 import time
@@ -17,11 +17,11 @@ def config_visualization():
     # the name of the layer we want to visualize
     # (see model definition at keras/applications/vgg16.py)
     layer_name = 'block5_conv3'
-    #MODEL_SECOND.Second_Final_Model.summary()
+    #MODEL_GPU.Second_Final_Model.summary()
     # this is the placeholder for the input images
-    input_img = MODEL_SECOND.Second_Final_Model.input
+    input_img = MODEL_GPU.Second_Final_Model.input
     # get the symbolic outputs of each "key" layer (we gave them unique names).
-    layer_dict = dict([(layer.name, layer) for layer in MODEL_SECOND.Second_Final_Model.layers[1:]])
+    layer_dict = dict([(layer.name, layer) for layer in MODEL_GPU.Second_Final_Model.layers[1:]])
     return img_width, img_height, input_img, layer_dict
 
 
